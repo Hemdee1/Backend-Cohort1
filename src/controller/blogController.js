@@ -64,7 +64,7 @@ const getBlog = async (req, res) => {
 };
 
 const updateBlog = async (req, res) => {
-  //
+  // controller to update blog
 };
 
 const deleteBlog = async (req, res) => {
