@@ -11,16 +11,16 @@ const {
   createBlog,
   deleteBlog,
   getBlog,
-  getBlogs,
+  getAllBlogs,
   updateBlog,
 } = require("../controller/blogController");
 
 const blogRoutes = express.Router();
 
 blogRoutes.post("/", createBlog);
-blogRoutes.get("/", getBlogs);
+blogRoutes.get("/", getAllBlogs);
 blogRoutes.get("/:id", getBlog);
-blogRoutes.put("/:id", updateBlog);
-blogRoutes.delete("/:id", deleteBlog);
+blogRoutes.put("/update/:id", updateBlog);
+blogRoutes.delete("/delete/:id", deleteBlog);
 
 module.exports = blogRoutes;

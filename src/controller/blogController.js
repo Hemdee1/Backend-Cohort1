@@ -39,7 +39,7 @@ const createBlog = async (req, res) => {
   }
 };
 
-const getBlogs = async (req, res) => {
+const getAllBlogs = async (req, res) => {
   try {
     const blogs = await blogModel.find();
 
@@ -64,11 +64,34 @@ const getBlog = async (req, res) => {
 };
 
 const updateBlog = async (req, res) => {
-  // controller to update blog
+  const { id } = req.params;
+  const { title, snippet, body } = req.body;
+
+  try {
+    const blog = await blogModel.findByIdAndUpdate(
+      id,
+      { title, snippet, body },
+      { new: true }
+    );
+
+    res.status(200).json(blog);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
 };
 
 const deleteBlog = async (req, res) => {
-  //
+  const { id } = req.params;
+
+  try {
+    await blogModel.findByIdAndDelete(id);
+
+    res.status(200).json("Blog deleted succesfully");
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
 };
 
-module.exports = { createBlog, getBlog, getBlogs, deleteBlog, updateBlog };
+module.exports = { createBlog, getBlog, getAllBlogs, deleteBlog, updateBlog };
