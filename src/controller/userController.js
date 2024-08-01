@@ -5,31 +5,31 @@ const Signup = async (req, res) => {
   const { firstName, lastName, userName, email, password } = req.body;
 
   try {
-    // check if there is a value of firstName, lastName, userName, email or password coming from the frontend
+    // check if we have all the credentials coming from the frontend
     if (!firstName || !lastName || !userName || !email || !password) {
-      throw new Error("All credentials must be included!");
+      throw new Error("All credentials must be included");
     }
 
-    // check if there is a user created with the email already
-    const userWithEmail = await userModel.findOne({ email });
-    if (userWithEmail) {
-      throw new Error("Account already created, log in instead");
+    // getting a user from the database with the email
+    const existingUser = await userModel.findOne({ email });
+
+    if (existingUser) {
+      throw new Error("There is an account with this email, log in instead");
     }
 
-    // check if there is a user created with the username already
-    const userWithUserName = await userModel.findOne({ userName });
-    if (userWithUserName) {
-      throw new Error("Username already chosen, use another one instead");
+    // getting a user from the database with the username
+    const existingUserWithUserName = await userModel.findOne({ userName });
+
+    if (existingUserWithUserName) {
+      throw new Error("Username chosen already");
     }
 
-    // check if the password is at least 8 characters long
     if (password.length < 8) {
       throw new Error("Password must be at least 8 characters long");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // create a new user
     const user = await userModel.create({
       firstName,
       lastName,
@@ -49,25 +49,21 @@ const Login = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // check if there is email and password coming from the frontend
     if (!email || !password) {
-      throw new Error("Email and Password must be included");
+      throw new Error("All credentials must be included");
     }
 
-    // get the user from the database
+    // fetch a user with the email
     const user = await userModel.findOne({ email });
 
-    // if we are not able to get a user, send an error message
     if (!user) {
-      throw new Error("There is no account with this email, Sign up instead");
+      throw new Error("There is no account with this email, sign up instead");
     }
 
-    // if there is a user, check if the input password matches the previous password
     const matchedPassword = await bcrypt.compare(password, user.password);
 
-    //  if password does not match, send an error message
     if (!matchedPassword) {
-      throw new Error("Incorrect password");
+      throw new Error("Incorrect Password");
     }
 
     res.status(200).json(user);
@@ -78,7 +74,45 @@ const Login = async (req, res) => {
 };
 
 const ChangePassword = async (req, res) => {
-  //
+  const { oldPassword, newPassword } = req.body;
+  // get the id of the user from params
+  const { id } = req.params;
+
+  try {
+    // using the id, fetch the user from the database
+    const user = await userModel.findById(id);
+
+    // if we can't find user, send an error message
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // check if the old password matches user password in the database
+    const matchedPassword = await bcrypt.compare(oldPassword, user.password);
+
+    // if the password does not match, send an error message
+    if (!matchedPassword) {
+      throw new Error("Incorrect password");
+    }
+
+    // check if the new password is 8 characters long
+    if (newPassword.length < 8) {
+      throw new Error("Password must be at least 8 characters long");
+    }
+
+    // hash the new password before saving it in database
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // update the user data by changing the password to the new hashed password
+    await userModel.findByIdAndUpdate(id, {
+      password: hashedPassword,
+    });
+
+    res.status(200).json("Password updated successfully");
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
 };
 
 const Logout = async (req, res) => {

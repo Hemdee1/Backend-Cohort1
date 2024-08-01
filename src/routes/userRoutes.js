@@ -17,7 +17,7 @@ const userRoutes = express.Router();
 
 userRoutes.post("/signup", Signup);
 userRoutes.post("/login", Login);
-userRoutes.post("/change-password", ChangePassword);
+userRoutes.put("/change-password/:id", ChangePassword);
 userRoutes.post("/logout", Logout);
 userRoutes.post("/update", UpdateProfile);
 
