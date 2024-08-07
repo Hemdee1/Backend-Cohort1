@@ -38,6 +38,9 @@ const Signup = async (req, res) => {
       password: hashedPassword,
     });
 
+    // create a session for the user
+    req.session.userId = user.id;
+
     res.status(200).json(user);
   } catch (error) {
     console.log(error.message);
@@ -65,6 +68,9 @@ const Login = async (req, res) => {
     if (!matchedPassword) {
       throw new Error("Incorrect Password");
     }
+
+    // create a session for the user
+    req.session.userId = user.id;
 
     res.status(200).json(user);
   } catch (error) {
@@ -116,11 +122,74 @@ const ChangePassword = async (req, res) => {
 };
 
 const Logout = async (req, res) => {
-  //
+  // delete the session
+  req.session.destroy((error) => {
+    if (error) {
+      res.status(401).json(error.message);
+    } else {
+      res.status(200).json("Logout successfully");
+    }
+  });
 };
 
 const UpdateProfile = async (req, res) => {
-  //
+  const { id } = req.params;
+  const { firstName, lastName } = req.body;
+
+  try {
+    const user = await userModel.findByIdAndUpdate(
+      id,
+      { firstName, lastName },
+      { new: true }
+    );
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
 };
 
-module.exports = { Signup, Login, ChangePassword, Logout, UpdateProfile };
+const autoLogin = async (req, res) => {
+  const id = req.session.userId;
+
+  try {
+    if (!id) {
+      throw new Error("user not authenticated");
+    }
+
+    const user = await userModel.findById(id);
+
+    res.status(200).json(user);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
+};
+
+const getAllUsers = async (req, res) => {
+  try {
+    const users = await userModel.find();
+
+    res.status(200).json(users);
+  } catch (error) {
+    console.log(error.message);
+    res.status(400).json(error.message);
+  }
+};
+
+// AUTHENTICATION
+// 1- JSON WEB TOKEN AUTHENTICATION
+// 2- EXPRESS SESSION AUTHENTICATION
+// PACKAGE TO INSTALL - EXPRESS-SESSION, CONNECT-MONGO, DOTENV
+//
+
+module.exports = {
+  Signup,
+  Login,
+  ChangePassword,
+  Logout,
+  UpdateProfile,
+  getAllUsers,
+  autoLogin,
+};

@@ -5,6 +5,8 @@ const {
   Login,
   Logout,
   UpdateProfile,
+  getAllUsers,
+  autoLogin,
 } = require("../controller/userController");
 
 const userRoutes = express.Router();
@@ -19,6 +21,10 @@ userRoutes.post("/signup", Signup);
 userRoutes.post("/login", Login);
 userRoutes.put("/change-password/:id", ChangePassword);
 userRoutes.post("/logout", Logout);
-userRoutes.post("/update", UpdateProfile);
+userRoutes.put("/update/:id", UpdateProfile);
+
+userRoutes.get("/autologin", autoLogin);
+
+userRoutes.get("/", getAllUsers);
 
 module.exports = userRoutes;
